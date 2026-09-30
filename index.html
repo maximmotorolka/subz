@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Subz — своя соцсеть</title>
+<meta name="description" content="Subz — маленькая социальная сеть: лента, аккаунты, лайки, комментарии. Все данные — в твоём браузере.">
+<style>
+:root{--bg:#0e1116;--card:#171c24;--card2:#1d2430;--line:#252e3b;--txt:#e8edf4;--mut:#8b98ab;--acc:#7c5cff;--acc2:#48dbfb;--good:#1dd1a1;--bad:#ff5470}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--txt);font:15px/1.5 "Segoe UI",system-ui,Roboto,Arial,sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:0 14px 60px}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea{font:inherit;color:var(--txt);background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none;width:100%}
+input:focus,textarea:focus{border-color:var(--acc)}
+a{color:var(--acc2)}
+/* auth */
+#auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px;width:100%;max-width:420px}
+.logo{font-size:44px;font-weight:800;letter-spacing:-1px;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent;text-align:center}
+.tag{text-align:center;color:var(--mut);margin:6px 0 20px;font-size:14px}
+.auth-card label{display:block;font-size:13px;color:var(--mut);margin:14px 0 6px}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.swatch{width:30px;height:30px;border-radius:50%;border:2px solid transparent;transition:.15s}
+.swatch.sel{border-color:#fff;transform:scale(1.12)}
+.btn{display:inline-block;background:linear-gradient(90deg,var(--acc),#5a3ee0);color:#fff;border-radius:12px;padding:12px 18px;font-weight:600;margin-top:18px;width:100%}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:var(--card2);border:1px solid var(--line);color:var(--txt);font-weight:400}
+.btn.danger{background:var(--bad)}
+.quick{margin-top:16px}
+.quick p{font-size:12px;color:var(--mut);margin-bottom:8px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:7px;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 5px;font-size:13px}
+.chip:active{border-color:var(--acc)}
+/* header */
+header{position:sticky;top:0;z-index:10;background:rgba(14,17,22,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hrow{max-width:640px;margin:0 auto;padding:10px 14px;display:flex;align-items:center;gap:14px}
+.hlogo{font-size:24px;font-weight:800;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+nav{display:flex;gap:4px;flex:1}
+.navbtn{padding:8px 14px;border-radius:10px;color:var(--mut);font-weight:600;font-size:14px}
+.navbtn.on{background:var(--card2);color:var(--txt)}
+.me{display:flex;align-items:center;gap:8px}
+/* avatar */
+.av{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;font-weight:700;flex:none;user-select:none}
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:14px}
+.card .row1{display:flex;align-items:center;gap:10px}
+.who{font-weight:700}
+.who small{color:var(--mut);font-weight:400;margin-left:6px}
+.txt{margin:8px 0 2px;white-space:pre-wrap;word-break:break-word}
+.meta{display:flex;gap:16px;color:var(--mut);font-size:13px;margin-top:10px}
+.acts{display:flex;gap:8px;align-items:center}
+.act{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:13px;padding:6px 10px;border-radius:9px;background:var(--card2)}
+.act:hover{color:var(--txt)}
+.act.liked{color:var(--bad)}
+.act.del{margin-left:auto;font-size:12px;opacity:.6}
+.act.del:hover{color:var(--bad);opacity:1}
+/* composer */
+.composer{display:flex;gap:10px}
+.composer textarea{resize:vertical;min-height:44px}
+.composer .col{flex:1}
+.crow{display:flex;align-items:center;gap:10px;margin-top:8px}
+.emoji{font-size:20px}
+/* comments */
+.cmts{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;display:none}
+.cmt{display:flex;gap:8px;margin-top:8px}
+.cmt .bubble{background:var(--card2);border-radius:10px;padding:7px 10px;font-size:14px;flex:1}
+.cmt .who{font-size:12px}
+.cmt .cmt-del{opacity:.5;font-size:11px;color:var(--mut)}
+.cmt .cmt-del:hover{color:var(--bad);opacity:1}
+.crow-cmt{display:flex;gap:8px;margin-top:10px}
+/* filter chip */
+.filter{display:none;align-items:center;gap:8px;margin-top:12px;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;width:fit-content}
+.filter.on{display:flex}
+.filter b{color:var(--acc2)}
+.filter button{font-size:15px;color:var(--mut)}
+/* people */
+.person{display:flex;align-items:center;gap:12px}
+.person .inf{flex:1}
+.person .inf b{font-size:15px}
+.person .inf p{color:var(--mut);font-size:13px}
+.person .cnt{color:var(--mut);font-size:12px;text-align:right;line-height:1.6}
+.person .you{font-size:11px;color:var(--acc2);border:1px solid var(--acc2);border-radius:999px;padding:1px 7px}
+/* profile */
+.p-head{display:flex;align-items:center;gap:14px}
+.p-head h2{font-size:22px}
+.p-head p{color:var(--mut);font-size:13px}
+.p-stats{display:flex;gap:10px;margin-top:14px}
+.stat{flex:1;background:var(--card2);border-radius:12px;padding:12px;text-align:center}
+.stat b{display:block;font-size:20px}
+.stat span{color:var(--mut);font-size:12px}
+.p-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.p-actions .btn{width:auto;margin:0;padding:9px 14px;font-size:13px}
+/* toast */
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);background:var(--card2);border:1px solid var(--line);padding:10px 18px;border-radius:999px;transition:.25s;opacity:0;z-index:99;font-size:14px}
+#toast.on{transform:translateX(-50%);opacity:1}
+.empty{text-align:center;color:var(--mut);padding:36px 0}
+footer{color:var(--mut);text-align:center;font-size:12px;margin-top:34px}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.35)}100%{transform:scale(1)}}
+.pop{animation:pop .3s}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth">
+  <div class="auth-card">
+    <div class="logo">Subz</div>
+    <p class="tag">Своя маленькая соцсеть.<br>Без чужих серверов — всё живёт в твоём браузере.</p>
+    <label>Как тебя зовут?</label>
+    <input id="a-name" maxlength="20" placeholder="Например: Максим">
+    <label>Цвет аватарки</label>
+    <div class="swatches" id="a-colors"></div>
+    <label>О себе (необязательно)</label>
+    <input id="a-bio" maxlength="80" placeholder="Люблю танки и музыку">
+    <button class="btn" id="a-go">Войти в Subz</button>
+    <div class="quick">
+      <p>Быстрый вход как:</p>
+      <div class="chips" id="a-quick"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" hidden>
+  <header>
+    <div class="hrow">
+      <div class="hlogo">Subz</div>
+      <nav>
+        <button class="navbtn on" data-tab="feed">Лента</button>
+        <button class="navbtn" data-tab="people">Люди</button>
+        <button class="navbtn" data-tab="profile">Профиль</button>
+      </nav>
+      <div class="me" id="h-me"></div>
+    </div>
+  </header>
+  <div class="wrap">
+    <!-- FEED -->
+    <section id="v-feed">
+      <div class="card composer" id="composer">
+        <div id="c-av"></div>
+        <div class="col">
+          <textarea id="c-text" rows="2" maxlength="500" placeholder="Что нового?"></textarea>
+          <div class="crow">
+            <button class="emoji" data-emoji="😀">😀</button>
+            <button class="emoji" data-emoji="🔥">🔥</button>
+            <button class="emoji" data-emoji="💜">💜</button>
+            <button class="emoji" data-emoji="😎">😎</button>
+            <button class="btn" style="margin:0;width:auto;padding:8px 20px" id="c-post">Опубликовать</button>
+          </div>
+        </div>
+      </div>
+      <div class="filter" id="filter"></div>
+      <div id="feed"></div>
+    </section>
+    <!-- PEOPLE -->
+    <section id="v-people" hidden>
+      <div class="card" style="padding:6px" id="people"></div>
+    </section>
+    <!-- PROFILE -->
+    <section id="v-profile" hidden>
+      <div class="card p-head" id="p-head"></div>
+      <div class="card">
+        <label style="font-size:13px;color:var(--mut)">Имя</label>
+        <input id="p-name" maxlength="20" style="margin-top:6px">
+        <label style="font-size:13px;color:var(--mut);display:block;margin-top:12px">О себе</label>
+        <input id="p-bio" maxlength="80" style="margin-top:6px">
+        <div class="p-actions">
+          <button class="btn" style="width:auto;margin:0;padding:9px 16px;font-size:13px" id="p-save">Сохранить</button>
+          <button class="btn ghost" id="p-export">Экспорт JSON</button>
+          <button class="btn ghost" id="p-import">Импорт JSON</button>
+          <input type="file" id="p-file" accept=".json" hidden>
+        </div>
+      </div>
+      <div class="card">
+        <div class="meta" style="margin:0">Зарегистрирован: <span id="p-joined" style="color:var(--txt)"></span></div>
+        <div class="p-actions">
+          <button class="btn danger" id="p-logout" style="width:auto;margin:0;padding:9px 16px;font-size:13px;background:var(--bad)">Выйти</button>
+        </div>
+      </div>
+    </section>
+    <footer>Subz · офлайн-соцсеть · данные хранятся в этом браузере · экспорт/импорт — в профиле</footer>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+var DB_KEY='subz_db_v1',ME_KEY='subz_me_v1';
+var COLORS=['#ff5470','#ff9f43','#feca57','#1dd1a1','#48dbfb','#7c5cff','#f368e0','#10ac84'];
+var db,me=null,feedFilter=null;
+
+function $(s){return document.querySelector(s)}
+function $all(s){return document.querySelectorAll(s)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function linkify(s){return esc(s).replace(/(https?:\/\/\S+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g,'<br>')}
+function user(id){for(var i=0;i<db.users.length;i++)if(db.users[i].id===id)return db.users[i];return null}
+function initials(n){return n.split(' ').slice(0,2).map(function(p){return p[0]?p[0].toUpperCase():''}).join('')}
+function avHTML(u,s){return '<span class="av" style="width:'+s+'px;height:'+s+'px;font-size:'+(s*0.42)+'px;background:'+u.color+'">'+esc(initials(u.name))+'</span>'}
+function ago(ts){var s=(Date.now()-ts)/1000;if(s<60)return'только что';var m=s/60|0;if(m<60)return m+' мин назад';var h=m/60|0;if(h<24)return h+' ч назад';var d=h/24|0;if(d<7)return d+' дн назад';return new Date(ts).toLocaleDateString('ru-RU')}
+function toast(t){var el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(function(){el.classList.remove('on')},2200)}
+
+/* ---------- storage ---------- */
+function saveDB(){try{localStorage.setItem(DB_KEY,JSON.stringify(db))}catch(e){toast('Браузер блокирует localStorage')}}
+function loadDB(){
+  try{var d=JSON.parse(localStorage.getItem(DB_KEY));if(d&&d.users&&d.posts)return d}catch(e){}
+  var t=Date.now(),db2={users:[],posts:[]};
+  function U(name,color,bio,dAgo){var u={id:uid()+name, name:name,color:color,bio:bio,joined:t-dAgo*864e5};db2.users.push(u);return u}
+  function P(u,text,hAgo,likes,comments){var p={id:uid()+text.slice(0,3),uid:u.id,text:text,ts:t-hAgo*36e5,likes:likes||[],comments:comments||[]};db2.posts.push(p);return p}
+  var M=U('Максим','#7c5cff','Делаю игры: танки, каталку и не только',60),
+      L=U('Лена','#ff5470','Люблю музыку и мемы',58),
+      K=U('Костя','#48dbfb','Геймер, слушаю новинки с бота',55),
+      A=U('Аня','#1dd1a1','Админ этой вселенной',62);
+  P(A,'Добро пожаловать в Subz — нашу маленькую соцсеть! 👋 Здесь нет серверов и трекеров: всё хранится у тебя в браузере. Экспорт — в профиле.',48,['M','L','K'].map(function(x){return M.id}));
+  P(M,'Собрал танковую игру: 7 ботов, разрушаемые ящики, миникарта. Ботам уже не выжить 😎',30,[L.id,K.id],[{id:uid(),uid:K.id,text:'Скинь ссылку!',ts:t-26*36e5}]);
+  P(K,'Поставил новый трек с Telegram-бота — звучит 🔥',12,[M.id],[{id:uid(),uid:L.id,text:'Кайф, надо послушать',ts:t-9*36e5}]);
+  P(L,'Кто-нибудь играет в «Каталку»? Машина по городу, одна кнопка — и вперёд 🚗',5,[A.id],[{id:uid(),uid:A.id,text:'Добавила себе в закладки!',ts:t-2*36e5},{id:uid(),uid:M.id,text:'Ссылка в теме танков выше',ts:t-1*36e5}]);
+  db=db2;saveDB();return db2;
+}
+function saveMe(){try{localStorage.setItem(ME_KEY,me)}catch(e){}}
+function loadMe(){try{me=localStorage.getItem(ME_KEY)}catch(e){me=null};return user(me)}
+
+/* ---------- auth ---------- */
+var selColor=COLORS[Math.floor(Math.random()*COLORS.length)];
+function buildAuth(){
+  var c=$('#a-colors');c.innerHTML='';
+  COLORS.forEach(function(col){
+    var b=document.createElement('button');b.className='swatch'+(col===selColor?' sel':'');b.style.background=col;
+    b.onclick=function(){selColor=col;$all('.swatch').forEach(function(x){x.classList.remove('sel')});b.classList.add('sel')};
+    c.appendChild(b);
+  });
+  var q=$('#a-quick');q.innerHTML='';
+  db.users.slice(0,4).forEach(function(u){
+    var b=document.createElement('button');b.className='chip';b.innerHTML=avHTML(u,22)+'<span>'+esc(u.name)+'</span>';
+    b.onclick=function(){me=u.id;saveMe();enter()};
+    q.appendChild(b);
+  });
+}
+$('#a-go').onclick=function(){
+  var name=$('#a-name').value.trim();
+  if(name.length<2){toast('Минимум 2 символа');return}
+  var bio=$('#a-bio').value.trim();
+  var found=null;
+  db.users.forEach(function(u){if(u.name.toLowerCase()===name.toLowerCase())found=u});
+  if(found){me=found.id;if(bio)found.bio=bio;toast('С возвращением, '+found.name+'!')}
+  else{
+    var u={id:uid(),name:name,color:selColor,bio:bio,joined:Date.now()};
+    db.users.push(u);me=u.id;saveDB();
+    P0(u);
+    toast('Добро пожаловать, '+name+'!');
+  }
+  saveMe();enter();
+};
+function P0(u){db.posts.unshift({id:uid(),uid:u.id,text:'Привет, Subz! Я здесь с '+new Date().toLocaleDateString('ru-RU')+' 👋',ts:Date.now(),likes:[],comments:[]});saveDB()}
+
+/* ---------- app shell ---------- */
+function enter(){
+  $('#auth').hidden=true;$('#app').hidden=false;
+  var u=user(me);
+  $('#h-me').innerHTML=avHTML(u,34)+'<span style="font-weight:600">'+esc(u.name)+'</span>';
+  $('#c-av').innerHTML=avHTML(u,40);
+  renderAll();
+}
+function logout(){me=null;try{localStorage.removeItem(ME_KEY)}catch(e){};$('#app').hidden=true;$('#auth').hidden=false;buildAuth()}
+$all('.navbtn').forEach(function(b){
+  b.onclick=function(){
+    $all('.navbtn').forEach(function(x){x.classList.remove('on')});b.classList.add('on');
+    ['feed','people','profile'].forEach(function(v){$('#v-'+v).hidden=v!==b.dataset.tab});
+    if(b.dataset.tab==='feed')renderFeed();
+    if(b.dataset.tab==='people')renderPeople();
+    if(b.dataset.tab==='profile')renderProfile();
+  };
+});
+
+/* ---------- feed ---------- */
+function postHTML(p,forFeed){
+  var u=user(p.uid);if(!u)return'';
+  var liked=p.likes.indexOf(me)>-1;
+  var myCmts=p.comments.filter(function(c){return c.uid===me});
+  var del=p.uid===me?'<button class="act del" data-del="'+p.id+'">Удалить</button>':'';
+  var h='<div class="card" data-pid="'+p.id+'">'
+    +'<div class="row1">'+avHTML(u,38)+'<div class="who">'+esc(u.name)+(p.uid===me?' <small>(вы)</small>':'')+'<small>'+ago(p.ts)+'</small></div></div>'
+    +'<div class="txt">'+linkify(p.text)+'</div>'
+    +'<div class="meta acts">'
+    +'<button class="act '+(liked?'liked':'')+'" data-like="'+p.id+'"><span '+(liked?'class="pop"':'')+'>'+(liked?'❤':'♡')+'</span> '+p.likes.length+'</button>'
+    +'<button class="act" data-showc="'+p.id+'">💬 '+p.comments.length+'</button>'
+    +del+'</div>'
+    +'<div class="cmts" id="cmts-'+p.id+'">'
+    +p.comments.map(function(c){var cu=user(c.uid);if(!cu)return'';
+      return '<div class="cmt" data-cid="'+c.id+'">'+avHTML(cu,26)
+        +'<div class="bubble"><div class="who">'+esc(cu.name)+(c.uid===me?' <small style="color:var(--acc2)">(вы)</small>':'')+'</div>'+linkify(c.text)
+        +'<div style="color:var(--mut);font-size:11px;margin-top:3px">'+ago(c.ts)+'</div></div>'
+        +((c.uid===me||p.uid===me)?'<button class="cmt-del" data-delc="'+c.id+'">✕</button>':'')
+        +'</div>';
+    }).join('')
+    +'<div class="crow-cmt"><input maxlength="200" placeholder="Комментарий…" data-cmtin="'+p.id+'"><button class="btn" style="margin:0;width:auto;padding:8px 14px" data-cmtgo="'+p.id+'">→</button></div>'
+    +'</div></div>';
+  return h;
+}
+function renderFeed(){
+  var box=$('#feed');
+  var posts=db.posts.slice().sort(function(a,b){return b.ts-a.ts});
+  if(feedFilter)posts=posts.filter(function(p){return p.uid===feedFilter});
+  var f=$('#filter');
+  if(feedFilter){var fu=user(feedFilter);f.classList.add('on');f.innerHTML='Посты <b>'+esc(fu?fu.name:'?')+'</b> <button data-unfilter>✕</button>'}
+  else f.classList.remove('on');
+  if(!posts.length){box.innerHTML='<div class="empty">Пока пусто. Напиши первый пост! ✍️</div>';return}
+  box.innerHTML=posts.map(function(p){return postHTML(p)}).join('');
+}
+$('#feed').addEventListener('click',function(e){
+  var t=e.target;
+  if(t.dataset.like!==undefined&&t.dataset.like){toggleLike(t.dataset.like);return}
+  if(t.dataset.showc!==undefined&&t.dataset.showc){var c=$('#cmts-'+t.dataset.showc);c.style.display=c.style.display==='block'?'none':'block';return}
+  if(t.dataset.del){if(confirm('Удалить пост?')){db.posts=db.posts.filter(function(p){return p.id!==t.dataset.del});saveDB();renderFeed();toast('Пост удалён')}return}
+  if(t.dataset.delc){db.posts.forEach(function(p){p.comments=p.comments.filter(function(c){return c.id!==t.dataset.delc})});saveDB();renderFeed();toast('Комментарий удалён');return}
+  if(t.dataset.cmtgo){goCmt(t.dataset.cmtgo);return}
+  if(t.dataset.unfilter){feedFilter=null;renderFeed();return}
+});
+$('#feed').addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&!e.shiftKey&&e.target.dataset.cmtin!==undefined){e.preventDefault();goCmt(e.target.dataset.cmtin)}
+});
+function goCmt(pid){
+  var p=db.posts.find(function(x){return x.id===pid});if(!p)return;
+  var inp=$('#feed [data-cmtin="'+pid+'"]');var v=inp.value.trim();if(!v)return;
+  p.comments.push({id:uid(),uid:me,text:v,ts:Date.now()});saveDB();renderFeed();
+  var c=$('#cmts-'+pid);if(c)c.style.display='block';
+}
+function toggleLike(pid){
+  var p=db.posts.find(function(x){return x.id===pid});if(!p)return;
+  var i=p.likes.indexOf(me);if(i>-1)p.likes.splice(i,1);else p.likes.push(me);
+  saveDB();renderFeed();
+}
+$('#c-post').onclick=function(){
+  var v=$('#c-text').value.trim();if(!v){toast('Напиши что-нибудь');return}
+  db.posts.unshift({id:uid(),uid:me,text:v,ts:Date.now(),likes:[],comments:[]});
+  $('#c-text').value='';saveDB();renderFeed();toast('Опубликовано!');
+};
+$all('.emoji').forEach(function(b){b.onclick=function(){var i=$('#c-text');i.value+=b.dataset.emoji;i.focus()}});
+
+/* ---------- people ---------- */
+function renderPeople(){
+  var box=$('#people');box.innerHTML='';
+  db.users.slice().sort(function(a,b){return b.joined-a.joined}).forEach(function(u){
+    var pc=db.posts.filter(function(p){return p.uid===u.id}).length;
+    var lk=0;db.posts.forEach(function(p){if(p.likes.indexOf(u.id)>-1)lk++});
+    var d=document.createElement('div');
+    d.className='person card';d.style.margin='0';d.style.padding='12px';
+    d.innerHTML=avHTML(u,44)+'<div class="inf"><b>'+esc(u.name)+(u.id===me?' <span class="you">вы</span>':'')+'</b><p>'+esc(u.bio||'')+'</p></div><div class="cnt">'+pc+' пост(ов)<br>'+lk+' лайков</div>'
+    +'<button class="act" style="display:none">Читать</button>';
+    d.style.cursor='pointer';
+    d.onclick=function(){feedFilter=u.id;switchTab('feed')};
+    box.appendChild(d);
+  });
+}
+function switchTab(name){
+  $all('.navbtn').forEach(function(x){x.classList.toggle('on',x.dataset.tab===name)});
+  ['feed','people','profile'].forEach(function(v){$('#v-'+v).hidden=v!==name});
+  if(name==='feed')renderFeed();if(name==='people')renderPeople();if(name==='profile')renderProfile();
+}
+
+/* ---------- profile ---------- */
+function renderProfile(){
+  var u=user(me);if(!u)return logout();
+  $('#p-head').innerHTML=avHTML(u,64)+'<div><h2>'+esc(u.name)+'</h2><p>'+esc(u.bio||'—')+'</p></div>';
+  $('#p-name').value=u.name;$('#p-bio').value=u.bio||'';
+  var pc=db.posts.filter(function(p){return p.uid===u.id}).length;
+  var lk=0;db.posts.forEach(function(p){if(p.likes.indexOf(u.id)>-1)lk++});
+  var cm=0;db.posts.forEach(function(p){p.comments.forEach(function(c){if(c.uid===u.id)cm++})});
+  $('#p-head').insertAdjacentHTML('beforeend','<div style="flex:1"></div>');
+  var head=$('#p-head');
+  if(!head.querySelector('.p-stats')){
+    head.insertAdjacentHTML('beforeend','<div style="width:100%"></div>');
+  }
+  var box=head.parentElement;
+  var old=head.querySelector('.p-stats-holder');
+  if(old)old.remove();
+  var s=document.createElement('div');s.className='card';s.id='p-stats-holder';s.style.marginTop='14px';
+  s.innerHTML='<div class="p-stats" style="margin-top:0">'
+    +'<div class="stat"><b>'+pc+'</b><span>постов</span></div>'
+    +'<div class="stat"><b>'+cm+'</b><span>комментариев</span></div>'
+    +'<div class="stat"><b>'+lk+'</b><span>получено лайков</span></div></div>';
+  head.after(s);
+  $('#p-joined').textContent=new Date(u.joined).toLocaleDateString('ru-RU');
+}
+$('#p-save').onclick=function(){
+  var u=user(me);u.name=$('#p-name').value.trim()||u.name;u.bio=$('#p-bio').value.trim();
+  saveDB();enter();toast('Сохранено');
+};
+$('#p-export').onclick=function(){
+  var blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='subz-backup.json';a.click();
+  toast('Экспорт готов');
+};
+$('#p-import').onclick=function(){$('#p-file').click()};
+$('#p-file').onchange=function(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    try{
+      var d=JSON.parse(r.result);
+      if(!d.users||!d.posts)throw 0;
+      if(!confirm('Заменить все данные Subz из файла?'))return;
+      db=d;saveDB();
+      if(!user(me))me=db.users[0]?db.users[0].id:null;
+      saveMe();enter();toast('Импорт выполнен');
+    }catch(x){toast('Файл не похож на бэкап Subz')}
+  };
+  r.readAsText(f);e.target.value='';
+};
+$('#p-logout').onclick=logout;
+
+/* ---------- init ---------- */
+db=loadDB();
+if(loadMe())enter();else buildAuth();
+function renderAll(){renderFeed();renderPeople();renderProfile()}
+</script>
+</body>
+</html>
